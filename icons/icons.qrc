@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>gtk-connect.png</file>
+        <file>gtk-disconnect.png</file>
+        <file>document-properties.svg</file>
+        <file>document-save.svg</file>
+        <file>edit-clear.svg</file>
+        <file>emblem-web.png</file>
+        <file>go-home.svg</file>
+        <file>go-next.svg</file>
+        <file>go-previous.svg</file>
+        <file>package-downgrade.svg</file>
+        <file>package-upgrade.svg</file>
+        <file>start-here.svg</file>
+        <file>system-shutdown.svg</file>
+        <file>view-refresh.svg</file>
+        <file>window-close.svg</file>
+        <file>edit-clear2.svg</file>
+        <file>media-playback-start.png</file>
+        <file>media-seek-forward.png</file>
+        <file>media-playback-stop.svg</file>
+        <file>media-record.svg</file>
+        <file>wmtweaks.svg</file>
+    </qresource>
+</RCC>

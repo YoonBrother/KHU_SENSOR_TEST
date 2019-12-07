@@ -1,0 +1,84 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QMessageBox>
+#include "uart/settingsdialog.h"
+#include <QTimer>
+#include <QtCharts>
+#include <QtCharts/QLineSeries>
+#include <QDebug>
+
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
+
+
+private slots:
+    void on_pushButton_app_close_clicked();
+
+    void on_pushButton_uart_fpga_setting_clicked();
+
+    void on_pushButton_uart_fpga_connect_clicked();
+
+    void uart_fpga_readData();
+
+    void uart_fpga_handleError(QSerialPort::SerialPortError error);
+
+
+
+
+    void on_pushButton_MPR_Write_clicked();
+
+    void on_pushButton_MPR_Read_clicked();
+
+    void on_pushButton_test_FPGA_clicked();
+
+    void on_pushButton_MPR_AllDigital_clicked();
+
+    void on_pushButton_MPR_AllAnalog_clicked();
+
+    void on_pushButton_MPR_StartStream_clicked();
+
+    void on_pushButton_MPR_StopStream_clicked();
+
+    void on_pushButton_ADS_Write_clicked();
+
+    void on_pushButton_ADS_Read_clicked();
+
+    void on_pushButton_ADS_cmd_clicked();
+
+    void on_pushButton_ADS_RDATAC_clicked();
+
+private:
+    Ui::MainWindow *ui;
+    SettingsDialog *uart_fpga_setting;
+    QSerialPort *uart_fpga;
+    char flag_kind_ER;
+
+    int flag_data_pattern;
+
+    QChartView *chartView;
+    QChart *chart;
+
+    void uart_fpga_writeData(const QByteArray &data);
+    void radiobutton_block_select_setup();
+
+    void setupCombobox_ADS_cmd();
+    QString decode_ADS_cmd(QString cmd);
+    void setupCombobox_ADS_reg();
+    QString decode_ADS_reg(QString cmd);
+
+
+};
+
+#endif // MAINWINDOW_H
