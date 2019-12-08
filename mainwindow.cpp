@@ -202,6 +202,22 @@ void MainWindow::uart_fpga_readData()
             }
         }
     }
+    // process data from MPR
+    else if (data.length()>=3) {
+        if ((data.at(0)==0x46)&(data.at(1)==0x00)) // received first touch status registor
+        {
+            ui->label_mpr_ch0_state->setText((data.at(2)&0x01)?"1":"0");
+            ui->label_mpr_ch1_state->setText((data.at(2)&0x02)?"1":"0");
+            ui->label_mpr_ch2_state->setText((data.at(2)&0x04)?"1":"0");
+            ui->label_mpr_ch3_state->setText((data.at(2)&0x08)?"1":"0");
+            ui->label_mpr_ch4_state->setText((data.at(2)&0x10)?"1":"0");
+            ui->label_mpr_ch5_state->setText((data.at(2)&0x20)?"1":"0");
+            ui->label_mpr_ch6_state->setText((data.at(2)&0x40)?"1":"0");
+            ui->label_mpr_ch7_state->setText((data.at(2)&0x80)?"1":"0");
+            // read next registor
+
+        }
+    }
 }
 
 void MainWindow::uart_fpga_writeData(const QByteArray &data)
@@ -216,30 +232,22 @@ void MainWindow::uart_fpga_handleError(QSerialPort::SerialPortError error)
     }
 }
 
-//void MainWindow::on_pushButton_DUT_SRAM_Read_clicked()
-//{
-//    QString str = "U"; // Read all data from memory (DUT)
-//    uart_fpga_writeData(str.toLocal8Bit());
-//    flag_kind_ER = 'R';
-//}
-
-
-
-
-
-//void MainWindow::on_pushButton_DUT_SRAM_Write_00_clicked()
-//{
-//    QString str = "0"; // Write data to memory (DUT)
-//    uart_fpga_writeData(str.toLocal8Bit());
-//    flag_data_pattern = 0b00000000;
-//    flag_kind_ER = 'W';
-//}
-
+void MainWindow::configMPR(QString reg, QString value)
+{
+    QByteArray addr = QByteArray::fromHex(reg.toUtf8());
+    QByteArray data = QByteArray::fromHex(value.toUtf8());
+    QString str = "W"; // Write data to a register of MPR121
+    QByteArray dout = str.toLocal8Bit();
+    dout.append(addr);
+    dout.append(data);
+    qDebug() << "Config MPR: " << dout <<" length: "<< dout.length();;
+    uart_fpga_writeData(dout);
+    QThread::msleep(50);
+}
 
 
 void MainWindow::on_pushButton_MPR_Write_clicked()
 {
-    bool ok = false;
     QByteArray addr = QByteArray::fromHex(ui->lineEdit_register_address->text().toUtf8());
     QByteArray data = QByteArray::fromHex(ui->lineEdit_data_in->text().toUtf8());
     QString str = "W"; // Write data to a register of MPR121
@@ -297,26 +305,29 @@ void MainWindow::on_pushButton_MPR_AllAnalog_clicked()
 
 void MainWindow::on_pushButton_MPR_StartStream_clicked()
 {
-    QByteArray state = QByteArray::fromHex("01");
-    QByteArray period = QByteArray::fromHex("01"); // 10 mini second
-    QString str = "S"; // config MPR121 to start Streamming data
-    QByteArray dout = str.toLocal8Bit();
-    dout.append(state);
-    dout.append(period);
-    qDebug() << "Set MPR start streamming";
-    uart_fpga_writeData(dout);
+    // config sample rate
+
+    // AFE Configuration 1 Register (0x5C) = 1101 0000
+    // FFI = 11 Encoding 3 – Sets samples taken to 34 for first filter
+    configMPR("5C","d0");
+    // AFE Configuration 2 Register (0x5D), = 001 11 101 = 3d
+    // SFI = 11 Encoding 3 – Number of samples is set to 18 for second filter
+    // ESI = 101 Encoding 5 – Period set to 32 ms
+    configMPR("5D","3d");
+    configMPR("5D","3d");
+    configMPR("5D","3d");
+    configMPR("5D","3d");
+    // start all channel both proximity and measurement
+    // Electrode Configuration Register (ECR, 0x5E)
+    configMPR("5E","3f");
+    configMPR("5E","3f");
+    configMPR("5E","3f");
+    configMPR("5E","3f");
 }
 
 void MainWindow::on_pushButton_MPR_StopStream_clicked()
 {
-    QByteArray state = QByteArray::fromHex("00");
-    QByteArray number = QByteArray::fromHex("00");
-    QString str = "S"; // config MPR121 to stop Streamming data
-    QByteArray dout = str.toLocal8Bit();
-    dout.append(state);
-    dout.append(number);
-    qDebug() << "Set MPR stop streamming";
-    uart_fpga_writeData(dout);
+    configMPR("5E","00");
 }
 /*********** For ADS command *************************/
 void MainWindow::setupCombobox_ADS_cmd()

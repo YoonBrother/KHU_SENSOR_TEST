@@ -30,7 +30,7 @@
        </size>
       </property>
       <property name="title">
-       <string>I2C MSP121</string>
+       <string>I2C MPR121</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
@@ -384,7 +384,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Start Stream</string>
+          <string>Start</string>
          </property>
         </widget>
        </item>
@@ -403,7 +403,27 @@
           </size>
          </property>
          <property name="text">
-          <string>Stop Stream</string>
+          <string>Stop</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLineEdit" name="lineEdit_MPR_samplerate">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Sample rate (ms)</string>
          </property>
         </widget>
        </item>

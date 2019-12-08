@@ -87,6 +87,7 @@ private:
     QString decode_ADS_reg(QString cmd);
 
     void configADS(QString reg,QString value);
+    void configMPR(QString reg,QString value);
 
 
 };
