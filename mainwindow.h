@@ -8,6 +8,7 @@
 #include <QtCharts>
 #include <QtCharts/QLineSeries>
 #include <QDebug>
+#include <QThread>
 
 namespace Ui {
 class MainWindow;
@@ -59,6 +60,8 @@ private slots:
 
     void on_pushButton_ADS_RDATAC_clicked();
 
+    void on_pushButton_ADS_autoconfig_clicked();
+
 private:
     Ui::MainWindow *ui;
     SettingsDialog *uart_fpga_setting;
@@ -67,8 +70,13 @@ private:
 
     int flag_data_pattern;
 
+    QLineSeries *series;
+    QLineSeries *series2;
     QChartView *chartView;
     QChart *chart;
+
+    QList<int> ecg_data_list1;
+    QList<int> ecg_data_list2;
 
     void uart_fpga_writeData(const QByteArray &data);
     void radiobutton_block_select_setup();
@@ -77,6 +85,8 @@ private:
     QString decode_ADS_cmd(QString cmd);
     void setupCombobox_ADS_reg();
     QString decode_ADS_reg(QString cmd);
+
+    void configADS(QString reg,QString value);
 
 
 };

@@ -29,15 +29,26 @@ MainWindow::MainWindow(QWidget *parent) :
     setupCombobox_ADS_cmd();
     setupCombobox_ADS_reg();
     // add ECG chart
-     QLineSeries *series = new QLineSeries();
-     series->append(0, 6);
-     series->append(2, 4);
-     series->append(3, 8);
-     series->append(7, 4);
-     series->append(10, 5);
+     series = new QLineSeries();
+     ecg_data_list1.append(0);
+     series->append(0, ecg_data_list1.at(0));
+     series2 = new QLineSeries();
+     ecg_data_list2.append(0);
+     series2->append(0, ecg_data_list2.at(0));
+
+     for (int var = 1; var < 200; ++var) {
+         ecg_data_list1.append(9000000);
+         series->append(var, ecg_data_list1.at(var));
+         ecg_data_list2.append(9000000);
+         series2->append(var, ecg_data_list2.at(var));
+     }
+     series->setName("CH1");
+     series2->setName("CH2");
     chart = new QChart();
-    chart->legend()->hide();
     chart->addSeries(series);
+    chart->addSeries(series2);
+
+    chart->legend()->show();
     chart->createDefaultAxes();
     chart->setTitle("ECG");
 
@@ -155,7 +166,7 @@ void MainWindow::uart_fpga_readData()
         qDebug("No data was currently available for reading from port "+uart_fpga->portName().toLatin1());
     }
 
-    qDebug("Data successfully received from port "+uart_fpga->portName().toLatin1());
+    //qDebug("Data successfully received from port "+uart_fpga->portName().toLatin1());
     ui->statusBar->showMessage("Data length "+QString::number(str.length(),10));
 
 
@@ -167,6 +178,30 @@ void MainWindow::uart_fpga_readData()
 
     ui->plainTextEdit_console->clear();
     ui->plainTextEdit_console->insertPlainText(str);
+
+    // process ADS ECG data from RDATAC function
+    // first char is 0x66 = 'f'
+    // 3 next byte is Status
+    // 3 next byte is Channel 1
+    // last 3 byte is Channel 2
+    if (data.length()>=10)
+    {
+        if (data.at(0)==0x66)
+        {
+            int ecg1 = 0;
+            ecg1 = (data.at(4)<<16)+(data.at(5)<<8)+data.at(6);
+            int ecg2 = 0;
+            ecg2 = (data.at(7)<<16)+(data.at(8)<<8)+data.at(9);
+            ecg_data_list1.removeFirst();
+            ecg_data_list1.append(ecg1);
+            ecg_data_list2.removeFirst();
+            ecg_data_list2.append(ecg2);
+            for (int var = 0; var < ecg_data_list1.length(); var++) {
+                series->replace(var,var, ecg_data_list1.at(var));
+                series2->replace(var,var, ecg_data_list2.at(var));
+            }
+        }
+    }
 }
 
 void MainWindow::uart_fpga_writeData(const QByteArray &data)
@@ -410,4 +445,33 @@ void MainWindow::on_pushButton_ADS_RDATAC_clicked()
     dout.append(dummy);
     qDebug() << "ADS read data continue: " << dout <<" length: "<< dout.length();
     uart_fpga_writeData(dout);
+}
+
+void MainWindow::configADS(QString reg,QString value)
+{
+    QString addrstr = decode_ADS_reg(reg);
+    QByteArray addr = QByteArray::fromHex(addrstr.toUtf8());
+    QByteArray data = QByteArray::fromHex(value.toUtf8());
+    QString str = "w"; // Write data to a register of ADS1292
+    QByteArray dout = str.toLocal8Bit();
+    dout.append(addr);
+    dout.append(data);
+    qDebug() << "auto config ADS: " << dout <<" length: "<< dout.length();;
+    uart_fpga_writeData(dout);
+    QThread::msleep(50);
+}
+
+void MainWindow::on_pushButton_ADS_autoconfig_clicked()
+{
+    configADS("CONFIG1","01");
+    configADS("CONFIG2","E0");
+    configADS("LOFF","10");
+    configADS("CH1SET","00");
+    configADS("CH2SET","00");
+    configADS("RLD_SENS","2C");
+    configADS("LOFF_SENS","0E");
+    configADS("LOFF_STAT","4F");
+    configADS("RESP1","EA");
+    configADS("RESP2","03");
+    configADS("GPIO","00");
 }
