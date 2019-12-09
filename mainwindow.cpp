@@ -215,7 +215,15 @@ void MainWindow::uart_fpga_readData()
             ui->label_mpr_ch6_state->setText((data.at(2)&0x40)?"1":"0");
             ui->label_mpr_ch7_state->setText((data.at(2)&0x80)?"1":"0");
             // read next registor
+            readMPR("01");
 
+        }
+        else if ((data.at(0)==0x52)&(data.at(1)==0x01)) // received second touch status registor
+        {
+            ui->label_mpr_ch8_state->setText((data.at(2)&0x01)?"1":"0");
+            ui->label_mpr_ch9_state->setText((data.at(2)&0x02)?"1":"0");
+            ui->label_mpr_ch10_state->setText((data.at(2)&0x04)?"1":"0");
+            ui->label_mpr_ch11_state->setText((data.at(2)&0x08)?"1":"0");
         }
     }
 }
@@ -245,6 +253,17 @@ void MainWindow::configMPR(QString reg, QString value)
     QThread::msleep(50);
 }
 
+void MainWindow::readMPR(QString reg)
+{
+    QByteArray addr = QByteArray::fromHex(reg.toUtf8());
+    QByteArray number = QByteArray::fromHex("01");
+    QString str = "R"; // Read value of a register of MPR121
+    QByteArray dout = str.toLocal8Bit();
+    dout.append(addr);
+    dout.append(number);
+    qDebug() << "Request to READ out from MPR: " << str <<" length: "<< str.toLatin1().length();
+    uart_fpga_writeData(dout);
+}
 
 void MainWindow::on_pushButton_MPR_Write_clicked()
 {

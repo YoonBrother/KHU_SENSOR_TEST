@@ -89,6 +89,8 @@ private:
     void configADS(QString reg,QString value);
     void configMPR(QString reg,QString value);
 
+    void readMPR(QString reg);
+
 
 };
 
