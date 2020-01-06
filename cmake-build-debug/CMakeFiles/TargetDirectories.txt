@@ -1,0 +1,3 @@
+/home/parallels/Khu_sensor/khu_sensor_test/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/parallels/Khu_sensor/khu_sensor_test/cmake-build-debug/CMakeFiles/main.dir
+/home/parallels/Khu_sensor/khu_sensor_test/cmake-build-debug/CMakeFiles/edit_cache.dir

@@ -90,6 +90,8 @@ private:
     void configMPR(QString reg,QString value);
 
     void readMPR(QString reg);
+    void readMPR_2(QString reg);
+    void on_pushButton_MPR_autoconfig_clicked();
 
 
 };

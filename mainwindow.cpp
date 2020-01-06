@@ -154,10 +154,22 @@ void MainWindow::on_pushButton_uart_fpga_connect_clicked()
 
 void MainWindow::uart_fpga_readData()
 {
-    while (uart_fpga->waitForReadyRead(50)){
-            //qDebug("data come 1");
+
+    //MPR
+    while (uart_fpga->waitForReadyRead(120)){
+            //qDebug("data come 1_1");
             //raw_data->raw_data->append(uart_fpga->readAll());
     }
+
+
+    //ADS
+    /*
+    while (uart_fpga->waitForReadyRead(50)){
+            //qDebug("data come 1_1");
+            //raw_data->raw_data->append(uart_fpga->readAll());
+    }
+    */
+
     QByteArray data = uart_fpga->readAll();
     QString str = QString(data);
     if (uart_fpga->error() == QSerialPort::ReadError) {
@@ -166,24 +178,28 @@ void MainWindow::uart_fpga_readData()
         qDebug("No data was currently available for reading from port "+uart_fpga->portName().toLatin1());
     }
 
-    //qDebug("Data successfully received from port "+uart_fpga->portName().toLatin1());
+    qDebug("Data successfully received from port "+uart_fpga->portName().toLatin1());
     ui->statusBar->showMessage("Data length "+QString::number(str.length(),10));
+
 
 
     // process the received data
     if (data.length()>1)
     {
         str = data.toHex(' ');
+        //qDebug()<<"raw Data : "<<data<<"toHex : "<<str<<"length : "<<data.length();
     }
 
     ui->plainTextEdit_console->clear();
     ui->plainTextEdit_console->insertPlainText(str);
-
+    /*
     // process ADS ECG data from RDATAC function
     // first char is 0x66 = 'f'
     // 3 next byte is Status
     // 3 next byte is Channel 1
     // last 3 byte is Channel 2
+    qDebug()<<"data length : "<<data.length()<<"str : "<<str;
+
     if (data.length()>=10)
     {
         if (data.at(0)==0x66)
@@ -197,36 +213,47 @@ void MainWindow::uart_fpga_readData()
             ecg_data_list2.removeFirst();
             ecg_data_list2.append(ecg2);
             for (int var = 0; var < ecg_data_list1.length(); var++) {
-                series->replace(var,var, ecg_data_list1.at(var));
+                //series->replace(var,var, ecg_data_list1.at(var));
                 series2->replace(var,var, ecg_data_list2.at(var));
             }
         }
     }
-    // process data from MPR
-    else if (data.length()>=3) {
-        if ((data.at(0)==0x46)&(data.at(1)==0x00)) // received first touch status registor
-        {
-            ui->label_mpr_ch0_state->setText((data.at(2)&0x01)?"1":"0");
-            ui->label_mpr_ch1_state->setText((data.at(2)&0x02)?"1":"0");
-            ui->label_mpr_ch2_state->setText((data.at(2)&0x04)?"1":"0");
-            ui->label_mpr_ch3_state->setText((data.at(2)&0x08)?"1":"0");
-            ui->label_mpr_ch4_state->setText((data.at(2)&0x10)?"1":"0");
-            ui->label_mpr_ch5_state->setText((data.at(2)&0x20)?"1":"0");
-            ui->label_mpr_ch6_state->setText((data.at(2)&0x40)?"1":"0");
-            ui->label_mpr_ch7_state->setText((data.at(2)&0x80)?"1":"0");
-            // read next registor
-            readMPR("01");
+    */
 
-        }
-        else if ((data.at(0)==0x52)&(data.at(1)==0x01)) // received second touch status registor
-        {
-            ui->label_mpr_ch8_state->setText((data.at(2)&0x01)?"1":"0");
-            ui->label_mpr_ch9_state->setText((data.at(2)&0x02)?"1":"0");
-            ui->label_mpr_ch10_state->setText((data.at(2)&0x04)?"1":"0");
-            ui->label_mpr_ch11_state->setText((data.at(2)&0x08)?"1":"0");
+
+
+    // process data from MPR
+    if (data.length()>=2) {
+
+        readMPR("01");
+        if(data.length()>=4){
+            QStringList list1 = str.split(" ");
+            qDebug()<<"list1 : " << list1;
+            bool ok;
+            QString qsVal1_7 = list1[2].insert(0, "0x");
+            QString qsVal8_12 = list1[5].insert(0, "0x");
+            qDebug()<<"qsVal1_7 : " << qsVal1_7;
+            qDebug()<<"qsVal8_12 : " << qsVal8_12;
+            QString biVal1_7 =  QString("%1").arg(qsVal1_7.toULongLong(&ok, 16), 8, 2, QChar('0'));
+            QString biVal8_12 =  QString("%1").arg(qsVal8_12.toULongLong(&ok, 16), 8, 2, QChar('0'));
+            qDebug()<<"1-7 : " << biVal1_7 << "8-12"<<biVal8_12;
+            ui->label_mpr_ch0_state->setText((biVal1_7[7]=="1")?"1":"0");
+            ui->label_mpr_ch1_state->setText((biVal1_7[6]=="1")?"1":"0");
+            ui->label_mpr_ch2_state->setText((biVal1_7[5]=="1")?"1":"0");
+            ui->label_mpr_ch3_state->setText((biVal1_7[4]=="1")?"1":"0");
+            ui->label_mpr_ch4_state->setText((biVal1_7[3]=="1")?"1":"0");
+            ui->label_mpr_ch5_state->setText((biVal1_7[2]=="1")?"1":"0");
+            ui->label_mpr_ch6_state->setText((biVal1_7[1]=="1")?"1":"0");
+            ui->label_mpr_ch7_state->setText((biVal1_7[0]=="1")?"1":"0");
+            ui->label_mpr_ch8_state->setText((biVal8_12[7]=="1")?"1":"0");
+            ui->label_mpr_ch9_state->setText((biVal8_12[6]=="1")?"1":"0");
+            ui->label_mpr_ch10_state->setText((biVal8_12[5]=="1")?"1":"0");
+            ui->label_mpr_ch11_state->setText((biVal8_12[4]=="1")?"1":"0");
+
         }
     }
 }
+
 
 void MainWindow::uart_fpga_writeData(const QByteArray &data)
 {
@@ -254,6 +281,18 @@ void MainWindow::configMPR(QString reg, QString value)
 }
 
 void MainWindow::readMPR(QString reg)
+{
+    QByteArray addr = QByteArray::fromHex(reg.toUtf8());
+    QByteArray number = QByteArray::fromHex("01");
+    QString str = "R"; // Read value of a register of MPR121
+    QByteArray dout = str.toLocal8Bit();
+    dout.append(addr);
+    dout.append(number);
+    qDebug() << "Request to READ out from MPR: " << str <<" length: "<< str.toLatin1().length();
+    uart_fpga_writeData(dout);
+}
+
+void MainWindow::readMPR_2(QString reg)
 {
     QByteArray addr = QByteArray::fromHex(reg.toUtf8());
     QByteArray number = QByteArray::fromHex("01");
@@ -324,12 +363,13 @@ void MainWindow::on_pushButton_MPR_AllAnalog_clicked()
 
 void MainWindow::on_pushButton_MPR_StartStream_clicked()
 {
+
     // config sample rate
 
     // AFE Configuration 1 Register (0x5C) = 1101 0000
     // FFI = 11 Encoding 3 – Sets samples taken to 34 for first filter
     configMPR("5C","d0");
-    // AFE Configuration 2 Register (0x5D), = 001 11 101 = 3d
+    // AFE Configuration 2 Register (0x5D), = 001 11 100 = 3d
     // SFI = 11 Encoding 3 – Number of samples is set to 18 for second filter
     // ESI = 101 Encoding 5 – Period set to 32 ms
     configMPR("5D","3d");
@@ -338,10 +378,28 @@ void MainWindow::on_pushButton_MPR_StartStream_clicked()
     configMPR("5D","3d");
     // start all channel both proximity and measurement
     // Electrode Configuration Register (ECR, 0x5E)
+
     configMPR("5E","3f");
     configMPR("5E","3f");
     configMPR("5E","3f");
     configMPR("5E","3f");
+
+    configMPR("2B","01");
+    configMPR("2C","E0");
+    configMPR("2D","10");
+    configMPR("2E","00");
+    configMPR("2F","00");
+    configMPR("30","2C");
+    configMPR("31","0E");
+    configMPR("32","4F");
+    configMPR("33","EA");
+    configMPR("34","03");
+    configMPR("35","00");
+    configMPR("5B","00");
+    configMPR("5C","10");
+    configMPR("5D","20");
+    configMPR("5E","8F");
+
 }
 
 void MainWindow::on_pushButton_MPR_StopStream_clicked()
@@ -505,3 +563,5 @@ void MainWindow::on_pushButton_ADS_autoconfig_clicked()
     configADS("RESP2","03");
     configADS("GPIO","00");
 }
+
+

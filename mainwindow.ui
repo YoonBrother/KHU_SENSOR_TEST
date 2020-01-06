@@ -733,7 +733,4 @@
   <include location="icons/icons.qrc"/>
  </resources>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup_2"/>
- </buttongroups>
 </ui>

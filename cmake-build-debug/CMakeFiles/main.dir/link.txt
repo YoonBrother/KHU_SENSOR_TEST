@@ -1,0 +1,1 @@
+g++  -g -o -Wall -std=c++17  -g  -Wl -rdynamic CMakeFiles/main.dir/main.cpp.o CMakeFiles/main.dir/dut_data.cpp.o CMakeFiles/main.dir/mainwindow.cpp.o  -o main 
